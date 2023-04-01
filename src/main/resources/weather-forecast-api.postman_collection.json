@@ -1,0 +1,128 @@
+{
+	"info": {
+		"_postman_id": "5977a8f1-a3df-4c34-889b-d6d918f676cb",
+		"name": "weather-forecast-api",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "/points",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "https://api.weather.gov/points/41.8786,-87.6366",
+					"protocol": "https",
+					"host": [
+						"api",
+						"weather",
+						"gov"
+					],
+					"path": [
+						"points",
+						"41.8786,-87.6366"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "/forcast",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "https://api.weather.gov/gridpoints/LOT/75,73/forecast",
+					"protocol": "https",
+					"host": [
+						"api",
+						"weather",
+						"gov"
+					],
+					"path": [
+						"gridpoints",
+						"LOT",
+						"75,73",
+						"forecast"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "/forecastZone",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "https://api.weather.gov/zones/forecast/ILZ104",
+					"protocol": "https",
+					"host": [
+						"api",
+						"weather",
+						"gov"
+					],
+					"path": [
+						"zones",
+						"forecast",
+						"ILZ104"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "/alerts",
+			"request": {
+				"method": "GET",
+				"header": []
+			},
+			"response": []
+		},
+		{
+			"name": "/alerts Copy",
+			"request": {
+				"method": "GET",
+				"header": []
+			},
+			"response": []
+		},
+		{
+			"name": "Mule local",
+			"request": {
+				"method": "GET",
+				"header": []
+			},
+			"response": []
+		},
+		{
+			"name": "Mule sandbox",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://weather-forecasting-api.us-e2.cloudhub.io/api/forcast/41.8786,-87.6366?format=csv",
+					"protocol": "http",
+					"host": [
+						"weather-forecasting-api",
+						"us-e2",
+						"cloudhub",
+						"io"
+					],
+					"path": [
+						"api",
+						"forcast",
+						"41.8786,-87.6366"
+					],
+					"query": [
+						{
+							"key": "format",
+							"value": "csv"
+						}
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
