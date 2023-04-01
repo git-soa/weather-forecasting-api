@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<http:listener-config name="HTTP_Listener_config"
+		doc:name="HTTP Listener config"
+		doc:id="2e18556b-c8bd-44c7-a460-6a78343af194">
+		<http:listener-connection host="0.0.0.0"
+			port="8081" />
+	</http:listener-config>
+	<http:request-config
+		name="HTTP_Request_configuration"
+		doc:name="HTTP Request configuration"
+		doc:id="8de18fa0-74c2-4807-8edb-077e079a82b4">
+		<http:request-connection protocol="HTTPS"
+			host="api.weather.gov" port="443" />
+	</http:request-config>
+	<flow name="weather-forcast-apiFlow"
+		doc:id="2d253e55-1587-461b-95f8-63018814179f">
+		<http:listener doc:name="Listener"
+			doc:id="5bef6be3-12c6-4d94-a92e-6fb4894f76fd"
+			config-ref="HTTP_Listener_config" path="api/forcast/{coordinates}" />
+		<ee:transform doc:name="Transform Message"
+			doc:id="7633e01e-3e0f-4632-b633-2988e18844fe">
+			<ee:message>
+			</ee:message>
+			<ee:variables>
+				<ee:set-variable resource="dw/format.dwl"
+					variableName="format" />
+				<ee:set-variable resource="dw/inputCoordinates.dwl" variableName="inputCoordinates" />
+			</ee:variables>
+		</ee:transform>
+		<http:request method="GET" doc:name="Points Request"
+			doc:id="7d6995da-79fe-42d2-bd73-45f1863ef276"
+			config-ref="HTTP_Request_configuration" path='/points/{coordinates}'>
+			<http:uri-params><![CDATA[#[{"coordinates": vars.inputCoordinates}]]]></http:uri-params>
+		</http:request>
+		<ee:transform doc:name="Transform Message"
+			doc:id="79a5885e-d71a-4c20-be57-45394c31b1c9">
+			<ee:message>
+			</ee:message>
+			<ee:variables>
+				<ee:set-variable resource="dw/forecast.dwl"
+					variableName="forecast" />
+				<ee:set-variable resource="dw/forecastZone.dwl"
+					variableName="forecastZone" />
+				<ee:set-variable resource="dw/forecastPath.dwl"
+					variableName="forecastPath" />
+				<ee:set-variable resource="dw/forecastZonePath.dwl"
+					variableName="forecastZonePath" />
+				<ee:set-variable resource="dw/ugcCode.dwl"
+					variableName="ugcCode" />
+				<ee:set-variable resource="dw/foundCoordinates.dwl" variableName="foundCoordinates" />
+			</ee:variables>
+		</ee:transform>
+		<http:request method="GET" doc:name="Forcast Request"
+			doc:id="1933753f-5d9c-42ef-951e-39750c697e59"
+			config-ref="HTTP_Request_configuration" path="#[vars.forecastPath]" />
+		<ee:transform doc:name="Transform Message"
+			doc:id="29cce686-49c2-44d1-a208-63d546e1420b">
+			<ee:message>
+			</ee:message>
+			<ee:variables>
+				<ee:set-variable resource="dw/periods.dwl"
+					variableName="periods" />
+			</ee:variables>
+		</ee:transform>
+		<!-- <http:request method="GET" doc:name="Forecast Zone Request" doc:id="f89156c4-e117-4aeb-8598-49a611ae2772" 
+			config-ref="HTTP_Request_configuration" path="#[vars.forecastZonePath]" /> -->
+		<http:request method="GET" doc:name="Alert"
+			doc:id="279c5205-9780-481c-840a-d8469bcf7f1a"
+			config-ref="HTTP_Request_configuration" path="/alerts/active"
+			target="alertResp">
+			<http:query-params><![CDATA[#[output application/java --- { 	"zone" : vars.ugcCode }]]]></http:query-params>
+		</http:request>
+		<ee:transform doc:name="Transform Message"
+			doc:id="c4b4d4d4-a636-4ac3-a5b9-faa1dcb1c1bc">
+			<ee:message>
+			</ee:message>
+			<ee:variables>
+				<ee:set-variable resource="dw/alertSearch.dwl"
+					variableName="alertSearch" />
+				<ee:set-variable resource="dw/finalResp.dwl"
+					variableName="finalResp" />
+			</ee:variables>
+		</ee:transform>
+		<!-- <flow-ref doc:name="weather-forcast-alert-flow" doc:id="f4bfe213-0396-44dd-9842-d35f396cb74a" 
+			name="weather-forcast-alert-flow"/> -->
+		<choice doc:name="CSV FORMAT?" doc:id="217f461c-1476-44bd-9f12-9c853018656c" >
+			<when expression="#[vars.format == 'csv']">
+				<ee:transform doc:name="Copy_of_Transform Message" doc:id="6fe6e9db-51c6-4713-8e6a-cdabca6196a9" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0 output application/csv header = true, quoteValues = true --- vars.finalResp]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</when>
+			<otherwise >
+				<ee:transform doc:name="Transform Message" doc:id="3881ebb9-50cc-482e-a771-5cb57356a954">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0 output application/json --- vars.finalResp]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+			</otherwise>
+		</choice>
+	</flow>
+	<!-- <flow name="weather-forcast-alert-flow" doc:id="e8ce1eec-2427-49b7-878f-c31ade938203" 
+		> <set-variable value="[]" doc:name="Set Variable" doc:id="b8bf6f31-fed8-4f22-8074-93861088929c" 
+		variableName="aggr"/> <foreach doc:name="For Each" doc:id="b30b729c-ed79-494c-8aa7-c2075bd0a16d" 
+		collection="#[vars.alertSearch]"> <ee:transform doc:name="Transform Message" 
+		doc:id="64f5266e-c9a2-4b28-93f0-ed5bc6ba726d"> <ee:message> </ee:message> 
+		<ee:variables> <ee:set-variable resource="dw/points.dwl" variableName="points" 
+		/> </ee:variables> </ee:transform> <http:request method="GET" doc:name="Request" 
+		doc:id="9e5914ce-f36b-4372-ab69-6bb256d18b74" config-ref="HTTP_Request_configuration" 
+		path="/alerts/active"> <http:query-params><![CDATA[#[output application/java 
+		-&#45;&#45; { "point" : vars.points }]]]></http:query-params> </http:request> 
+		<ee:transform doc:name="Transform Message" doc:id="ffd3a2ba-9ba8-4768-af6c-2a1c200ac72f"> 
+		<ee:message> <ee:set-payload><![CDATA[%dw 2.0 output application/java -&#45;&#45; 
+		{ "points": vars.points, "alerts": payload..event[0] }]]></ee:set-payload> 
+		</ee:message> </ee:transform> <ee:transform doc:name="Transform Message" 
+		doc:id="9a152df9-5a28-4832-b0f1-45dcdd64ca6f" > <ee:message > </ee:message> 
+		<ee:variables > <ee:set-variable variableName="aggr" ><![CDATA[%dw 2.0 output 
+		application/json -&#45;&#45; [payload] + vars.aggr]]></ee:set-variable> </ee:variables> 
+		</ee:transform> </foreach> </flow> -->
+</mule>

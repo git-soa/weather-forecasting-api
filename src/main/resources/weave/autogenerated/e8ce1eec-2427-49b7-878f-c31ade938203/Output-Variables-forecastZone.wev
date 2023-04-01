@@ -1,0 +1,4 @@
+%dw 2.0
+
+type auto_e8ce1eec_2427_49b7_878f_c31ade938203_Output_Variables_forecastZone = Any
+
