@@ -25,7 +25,7 @@ http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/
 		doc:id="2d253e55-1587-461b-95f8-63018814179f">
 		<http:listener doc:name="Listener"
 			doc:id="5bef6be3-12c6-4d94-a92e-6fb4894f76fd"
-			config-ref="HTTP_Listener_config" path="api/forcast/{coordinates}" />
+			config-ref="HTTP_Listener_config" path="api/forcast/{coordinates}" outputMimeType="application/csv"/>
 		<ee:transform doc:name="Transform Message"
 			doc:id="7633e01e-3e0f-4632-b633-2988e18844fe">
 			<ee:message>
@@ -94,9 +94,9 @@ http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/
 			name="weather-forcast-alert-flow"/> -->
 		<choice doc:name="CSV FORMAT?" doc:id="217f461c-1476-44bd-9f12-9c853018656c" >
 			<when expression="#[vars.format == 'csv']">
-				<ee:transform doc:name="Copy_of_Transform Message" doc:id="6fe6e9db-51c6-4713-8e6a-cdabca6196a9" >
+				<ee:transform doc:name="CSV" doc:id="6fe6e9db-51c6-4713-8e6a-cdabca6196a9" >
 					<ee:message >
-						<ee:set-payload ><![CDATA[%dw 2.0 output application/csv header = true, quoteValues = true --- vars.finalResp]]></ee:set-payload>
+						<ee:set-payload ><![CDATA[%dw 2.0 output application/csv  header=true, quoteValues=true,  quoteHeader=true --- vars.finalResp]]></ee:set-payload>
 					</ee:message>
 				</ee:transform>
 			</when>
